@@ -1,190 +1,47 @@
-import React from 'react';
-import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, ArrowUpRight, Menu, Search, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
-import { getLeatherImage, isSupabaseConfigured, supabase } from './services/supabase.js';
+import React,{useEffect,useMemo,useState} from 'react';
+import {ArrowRight,ArrowUpRight,Menu,Search,X,ZoomIn,ZoomOut,RotateCcw,Layers,Factory,ShieldCheck,MapPin,Phone,Mail} from 'lucide-react';
+import {getLeatherImage,isSupabaseConfigured,supabase} from './services/supabase.js';
+import AdminPanel from './components/AdminPanel.jsx';
 import packageInfo from '../package.json';
 
-const FILTER_FIELDS = [
-  { key: 'color', label: 'Colour' },
-  { key: 'thickness', label: 'Thickness' },
-  { key: 'tannage', label: 'Tannage' },
-  { key: 'animal', label: 'Animal' },
-  { key: 'origin', label: 'Origin' },
-];
+const FILTERS=[{key:'color',label:'Colour'},{key:'thickness',label:'Thickness'},{key:'tannage',label:'Tannage'},{key:'animal',label:'Animal'},{key:'origin',label:'Origin'}];
+const TABS=[['home','Home'],['collection','Leather collections'],['about','About Bhartiya'],['capabilities','Capabilities'],['contact','Contact'],['admin','Admin']];
 
-function ProductCard({ product, onOpen }) {
-  const image = getLeatherImage(product.main_photo);
-  return (
-    <article className="product-card">
-      <button className="product-image-button" type="button" onClick={() => onOpen(product)} aria-label={`View ${product.article_name} images`}>
-        <div className="product-image-wrap">
-          {image ? <img className="product-image" src={image} alt={`${product.article_name} leather in ${product.color || 'natural colour'}`} loading="lazy" /> : <div className="image-placeholder">LEATHER COLLECTION</div>}
-          <span className="product-id">{product.leather_id}</span>
-          <span className="image-zoom-hint"><ZoomIn size={14} /> View detail</span>
-        </div>
-      </button>
-      <div className="product-meta">
-        <div>
-          <p className="product-category">{product.animal || 'Leather'} · {product.tannage || 'Selected finish'}</p>
-          <h3>{product.article_name}</h3>
-        </div>
-        <span className="product-arrow" aria-hidden="true"><ArrowUpRight size={17} /></span>
-      </div>
-      <p className="product-colour">{product.color || 'Colour not specified'}</p>
-      <div className="product-specs">
-        {product.thickness && <span>{product.thickness} mm</span>}
-        {product.origin && <span>{product.origin}</span>}
-      </div>
-    </article>
-  );
+function ProductCard({product,onOpen}){
+ const image=getLeatherImage(product.main_photo);
+ return <article className="product-card"><button className="product-image-button" onClick={()=>onOpen(product)} aria-label={`View ${product.article_name} images`}><div className="product-image-wrap">{image?<img className="product-image" src={image} alt={`${product.article_name} leather`} loading="lazy"/>:<div className="image-placeholder">BHARTIYA LEATHER FASHIONS</div>}<span className="product-id">{product.leather_id}</span><span className="image-zoom-hint"><ZoomIn size={14}/> View detail</span></div></button><div className="product-meta"><div><p className="product-category">{product.collection_name||product.animal||'Leather'} · {product.tannage||'Selected tannage'}</p><h3>{product.article_name}</h3></div><span className="product-arrow"><ArrowUpRight size={17}/></span></div><p className="product-colour">{product.color||'Colour not specified'}</p><div className="product-specs">{product.thickness&&<span>{product.thickness} mm</span>}{product.origin&&<span>{product.origin}</span>}{product.finish&&<span>{product.finish}</span>}</div></article>;
 }
-
-function ImageViewer({ product, onClose }) {
-  const [showCloseup, setShowCloseup] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const mainImage = getLeatherImage(product.main_photo);
-  const closeupImage = getLeatherImage(product.closeup_photo);
-  const image = showCloseup && closeupImage ? closeupImage : mainImage;
-
-  useEffect(() => {
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') onClose();
-      if (event.key === '+' || event.key === '=') setZoom((value) => Math.min(4, Number((value + 0.05).toFixed(2))));
-      if (event.key === '-') setZoom((value) => Math.max(1, Number((value - 0.05).toFixed(2))));
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
-
-  const resetView = () => { setZoom(1); setPosition({ x: 0, y: 0 }); };
-  const changeImage = (closeup) => { setShowCloseup(closeup); resetView(); };
-
-  const handleWheel = (event) => {
-    event.preventDefault();
-    setZoom((value) => {
-      const change = event.deltaY < 0 ? 0.05 : -0.05;
-      return Math.min(4, Math.max(1, Number((value + change).toFixed(2))));
-    });
-  };
-
-  return (
-    <div className="viewer-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="image-viewer" role="dialog" aria-modal="true" aria-label={`${product.article_name} image viewer`}>
-        <div className="viewer-header">
-          <div><p className="viewer-kicker">{product.leather_id}</p><h3>{product.article_name}</h3><span>{product.color || 'Colour not specified'}</span></div>
-          <button className="viewer-close" onClick={onClose} aria-label="Close image viewer"><X size={22} /></button>
-        </div>
-        <div className="viewer-stage" onWheel={handleWheel} onPointerDown={(event) => { if (zoom > 1) { event.currentTarget.setPointerCapture(event.pointerId); setDragging(true); setDragStart({ x: event.clientX - position.x, y: event.clientY - position.y }); } }} onPointerMove={(event) => { if (dragging) setPosition({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y }); }} onPointerUp={() => setDragging(false)} onPointerCancel={() => setDragging(false)}>
-          {image ? <img draggable="false" className="viewer-image" src={image} alt={`${product.article_name} leather detail`} style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})` }} /> : <div className="image-placeholder">IMAGE NOT AVAILABLE</div>}
-          <span className="viewer-zoom-level">{Math.round(zoom * 100)}%</span>
-        </div>
-        <div className="viewer-controls">
-          <div className="viewer-image-switch">
-            <button className={!showCloseup ? 'active' : ''} onClick={() => changeImage(false)} disabled={!mainImage}>Main image</button>
-            <button className={showCloseup ? 'active' : ''} onClick={() => changeImage(true)} disabled={!closeupImage}>Close-up {closeupImage ? '' : '(not available)'}</button>
-          </div>
-          <div className="viewer-zoom-controls">
-            <button onClick={() => setZoom((value) => Math.max(1, Number((value - 0.05).toFixed(2))))} disabled={zoom <= 1} aria-label="Zoom out"><ZoomOut size={17} /></button>
-            <button onClick={() => setZoom((value) => Math.min(4, Number((value + 0.05).toFixed(2))))} disabled={zoom >= 4} aria-label="Zoom in"><ZoomIn size={17} /></button>
-            <label className="zoom-slider-control"><span>Zoom</span><input type="range" min="1" max="4" step="0.05" value={zoom} onChange={(event) => setZoom(Number(event.target.value))} aria-label="Adjust image zoom" /><span>{Math.round(zoom * 100)}%</span></label>
-            <button onClick={resetView} aria-label="Reset zoom and position"><RotateCcw size={16} /> Reset</button>
-          </div>
-        </div>
-        <p className="viewer-tip">Use the slider for fine zoom · Scroll to zoom · Drag to inspect details · Press Esc to close</p>
-      </section>
-    </div>
-  );
+function ImageViewer({product,onClose}){
+ const [closeup,setCloseup]=useState(false),[zoom,setZoom]=useState(1),[pos,setPos]=useState({x:0,y:0}),[drag,setDrag]=useState(false),[start,setStart]=useState({x:0,y:0});
+ const main=getLeatherImage(product.main_photo),detail=getLeatherImage(product.closeup_photo),image=closeup&&detail?detail:main;
+ useEffect(()=>{const key=e=>{if(e.key==='Escape')onClose();if(e.key==='+'||e.key==='=')setZoom(v=>Math.min(4,+(v+.05).toFixed(2)));if(e.key==='-')setZoom(v=>Math.max(1,+(v-.05).toFixed(2)));};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);},[onClose]);
+ const reset=()=>{setZoom(1);setPos({x:0,y:0});};
+ const wheel=e=>{e.preventDefault();setZoom(v=>Math.min(4,Math.max(1,+(v+(e.deltaY<0?.05:-.05)).toFixed(2))));};
+ return <div className="viewer-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><section className="image-viewer" role="dialog" aria-modal="true" aria-label={product.article_name+' image viewer'}><div className="viewer-header"><div><p className="viewer-kicker">{product.leather_id}</p><h3>{product.article_name}</h3><span>{product.color||'Colour not specified'}</span></div><button className="viewer-close" onClick={onClose}><X size={22}/></button></div><div className="viewer-stage" onWheel={wheel} onPointerDown={e=>{if(zoom>1){e.currentTarget.setPointerCapture(e.pointerId);setDrag(true);setStart({x:e.clientX-pos.x,y:e.clientY-pos.y});}}} onPointerMove={e=>{if(drag)setPos({x:e.clientX-start.x,y:e.clientY-start.y});}} onPointerUp={()=>setDrag(false)} onPointerCancel={()=>setDrag(false)}>{image?<img className="viewer-image" draggable="false" src={image} alt={product.article_name+' leather detail'} style={{transform:`translate(${pos.x}px,${pos.y}px) scale(${zoom})`}}/>:<div className="image-placeholder">IMAGE NOT AVAILABLE</div>}<span className="viewer-zoom-level">{Math.round(zoom*100)}%</span></div><div className="viewer-controls"><div className="viewer-image-switch"><button className={!closeup?'active':''} onClick={()=>{setCloseup(false);reset();}} disabled={!main}>Main image</button><button className={closeup?'active':''} onClick={()=>{setCloseup(true);reset();}} disabled={!detail}>Close-up</button></div><div className="viewer-zoom-controls"><button onClick={()=>setZoom(v=>Math.max(1,+(v-.05).toFixed(2)))} disabled={zoom<=1}><ZoomOut size={17}/></button><button onClick={()=>setZoom(v=>Math.min(4,+(v+.05).toFixed(2)))} disabled={zoom>=4}><ZoomIn size={17}/></button><label className="zoom-slider-control"><span>Zoom</span><input type="range" min="1" max="4" step=".05" value={zoom} onChange={e=>setZoom(+e.target.value)}/><span>{Math.round(zoom*100)}%</span></label><button onClick={reset}><RotateCcw size={16}/> Reset</button></div></div><p className="viewer-tip">Fine zoom · Scroll to zoom · Drag to inspect details · Press Esc to close</p></section></div>;
 }
-
-export default function App() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({ color: '', thickness: '', tannage: '', animal: '', origin: '' });
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    async function loadProducts() {
-      if (!isSupabaseConfigured) {
-        setError('Catalogue connection is not configured yet. Add the Supabase environment variables to continue.');
-        setLoading(false);
-        return;
-      }
-      const { data, error: queryError } = await supabase
-        .from('leather_products')
-        .select('leather_id, article_name, color, thickness, tannage, animal, origin, main_photo, closeup_photo')
-        .eq('is_active', true)
-        .order('article_name', { ascending: true });
-      if (!active) return;
-      if (queryError) setError(queryError.message || 'We could not load the collection. Please try again later.');
-      else setProducts(data || []);
-      setLoading(false);
-    }
-    loadProducts();
-    return () => { active = false; };
-  }, []);
-
-  const filterOptions = useMemo(() => Object.fromEntries(FILTER_FIELDS.map(({ key }) => [
-    key, [...new Set(products.map((product) => product[key]).filter((value) => value !== null && value !== undefined && String(value).trim() !== '').map(String))].sort((a, b) => a.localeCompare(b))
-  ])), [products]);
-
-  const filteredProducts = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return products.filter((product) => {
-      const matchesSearch = !term || [product.leather_id, product.article_name, product.color, product.thickness, product.tannage, product.animal, product.origin].filter(Boolean).some((value) => String(value).toLowerCase().includes(term));
-      const matchesFilters = FILTER_FIELDS.every(({ key }) => !filters[key] || String(product[key] ?? '') === filters[key]);
-      return matchesSearch && matchesFilters;
-    });
-  }, [products, search, filters]);
-
-  const activeFilterCount = Object.values(filters).filter(Boolean).length;
-  const clearFilters = () => { setSearch(''); setFilters({ color: '', thickness: '', tannage: '', animal: '', origin: '' }); };
-  const closeMobileNav = () => setMobileNavOpen(false);
-
-  return (
-    <main className="page-shell">
-      <header className="site-header">
-        <a className="brand" href="#home" onClick={closeMobileNav} aria-label="Leather Collection home"><span className="brand-mark">L</span><span className="brand-name">LEATHER <span>COLLECTION</span></span></a>
-        <nav className={`desktop-nav ${mobileNavOpen ? 'is-open' : ''}`} aria-label="Main navigation">
-          <a href="#home" onClick={closeMobileNav}>Home</a><a href="#collection" onClick={closeMobileNav}>Collection</a><a href="#story" onClick={closeMobileNav}>Our approach</a><a href="#contact" onClick={closeMobileNav}>Contact</a>
-        </nav>
-        <a className="header-link" href="#collection">Explore catalogue <ArrowRight size={15} /></a>
-        <button className="mobile-menu" aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'} onClick={() => setMobileNavOpen(!mobileNavOpen)}>{mobileNavOpen ? <X size={22} /> : <Menu size={22} />}</button>
-      </header>
-
-      <section className="hero" id="home">
-        <div className="hero-image" role="img" aria-label="Close-up of richly textured leather" />
-        <div className="hero-content"><p className="eyebrow">MATERIALS WITH CHARACTER</p><h1>Crafted by nature.<br /><em>Chosen by design.</em></h1><p className="hero-copy">A considered collection of fine leathers, selected for their character, texture and timeless appeal.</p><a className="primary-link" href="#collection">Discover the collection <ArrowRight size={17} /></a></div>
-        <div className="hero-note"><span>01 / THE COLLECTION</span><span>SELECTED WITH CARE</span></div>
-      </section>
-
-      <section className="collection-section" id="collection">
-        <div className="section-heading"><div><p className="eyebrow">A WORLD OF TEXTURE</p><h2>Every hide tells<br />a different story.</h2></div><p className="section-description">Explore our curated leather catalogue. Each article has its own distinctive grain, finish and feel.</p></div>
-        <div className="collection-toolbar">
-          <p className="collection-count">{loading ? 'Loading collection…' : `${filteredProducts.length} of ${products.length} articles`}</p>
-          <label className="search-box"><Search size={17} /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search article, colour, leather ID…" aria-label="Search leather collection" /></label>
-        </div>
-        <div className="filter-panel">
-          <div className="filter-panel-heading"><span>Filter collection</span><button onClick={clearFilters} disabled={!search && !activeFilterCount}>Clear all{activeFilterCount ? ` (${activeFilterCount})` : ''}</button></div>
-          <div className="filter-grid">
-            {FILTER_FIELDS.map(({ key, label }) => <label className="filter-field" key={key}><span>{label}</span><select value={filters[key]} onChange={(event) => setFilters((current) => ({ ...current, [key]: event.target.value }))}><option value="">All {label.toLowerCase()}s</option>{filterOptions[key].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>)}
-          </div>
-        </div>
-        {loading && <div className="collection-message">Preparing the collection…</div>}
-        {!loading && error && <div className="collection-message collection-error"><strong>Collection not available yet</strong><span>{error}</span></div>}
-        {!loading && !error && filteredProducts.length === 0 && <div className="collection-message">No articles match your search or filters. Try changing or clearing them.</div>}
-        {!loading && !error && filteredProducts.length > 0 && <div className="product-grid">{filteredProducts.map((product) => <ProductCard key={product.leather_id} product={product} onOpen={setSelectedProduct} />)}</div>}
-      </section>
-
-      <section className="story-section" id="story"><p className="eyebrow">THE DETAILS MATTER</p><h2>Character you can<br /><em>see and feel.</em></h2><p>From natural grain to considered finishes, discover materials chosen for the details that make every article distinct.</p></section>
-      <footer className="site-footer" id="contact"><a className="footer-brand" href="#home">LEATHER COLLECTION</a><span>Selected with care. Made to inspire.</span><span className="footer-contact">CONTACT &amp; SUPPORT</span><span className="footer-version">Version v{packageInfo.version} <span aria-hidden="true">·</span> Updated 05 Nov 2026</span></footer>
-      {selectedProduct && <ImageViewer product={selectedProduct} onClose={() => setSelectedProduct(null)} />}
-    </main>
-  );
+function Collection({products,loading,error,onOpen}){
+ const [search,setSearch]=useState(''),[filters,setFilters]=useState({color:'',thickness:'',tannage:'',animal:'',origin:''});
+ const options=useMemo(()=>Object.fromEntries(FILTERS.map(({key})=>[key,[...new Set(products.map(p=>p[key]).filter(v=>v!==null&&v!==undefined&&String(v).trim()).map(String))].sort((a,b)=>a.localeCompare(b))])),[products]);
+ const visible=useMemo(()=>products.filter(p=>(!search.trim()||[p.leather_id,p.article_name,p.color,p.thickness,p.tannage,p.animal,p.origin,p.collection_name,p.finish,p.grain].filter(Boolean).some(v=>String(v).toLowerCase().includes(search.trim().toLowerCase())))&&FILTERS.every(({key})=>!filters[key]||String(p[key]??'')===filters[key])),[products,search,filters]);
+ const count=Object.values(filters).filter(Boolean).length,clear=()=>{setSearch('');setFilters({color:'',thickness:'',tannage:'',animal:'',origin:''});};
+ return <section className="collection-section page-content"><div className="section-heading"><div><p className="eyebrow">BHARTIYA LEATHER FASHIONS</p><h2>Leather collections<br/>with character.</h2></div><p className="section-description">Browse articles by colour, thickness, tannage, animal type and origin. Select any image to inspect the main and close-up views.</p></div><div className="collection-toolbar"><p className="collection-count">{loading?'Loading collection…':visible.length+' of '+products.length+' articles'}</p><label className="search-box"><Search size={17}/><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search article, colour, leather ID…"/></label></div><div className="filter-panel"><div className="filter-panel-heading"><span>Filter collection</span><button onClick={clear} disabled={!search&&!count}>Clear all{count?' ('+count+')':''}</button></div><div className="filter-grid">{FILTERS.map(({key,label})=><label className="filter-field" key={key}><span>{label}</span><select value={filters[key]} onChange={e=>setFilters(v=>({...v,[key]:e.target.value}))}><option value="">All {label.toLowerCase()}s</option>{options[key].map(v=><option key={v}>{v}</option>)}</select></label>)}</div></div>{loading&&<div className="collection-message">Preparing the collection…</div>}{!loading&&error&&<div className="collection-message collection-error"><strong>Collection not available</strong><span>{error}</span></div>}{!loading&&!error&&!visible.length&&<div className="collection-message">No articles match your search or filters.</div>}{!loading&&!error&&visible.length>0&&<div className="product-grid">{visible.map(p=><ProductCard key={p.leather_id} product={p} onOpen={onOpen}/>)}</div>}</section>;
+}
+export default function App(){
+ const [products,setProducts]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[tab,setTab]=useState('home'),[selected,setSelected]=useState(null),[mobile,setMobile]=useState(false);
+ const loadProducts=async()=>{
+  if(!isSupabaseConfigured){setError('Catalogue connection is not configured. Add the Supabase environment variables.');setLoading(false);return;}
+  let result=await supabase.from('leather_products').select('leather_id,article_name,color,thickness,tannage,animal,origin,main_photo,closeup_photo,collection_name,finish,grain,application,description,remarks,is_active').eq('is_active',true).order('article_name',{ascending:true});
+  if(result.error&&/column .* does not exist|schema cache/i.test(result.error.message||'')) result=await supabase.from('leather_products').select('leather_id,article_name,color,thickness,tannage,animal,origin,main_photo,closeup_photo,is_active').eq('is_active',true).order('article_name',{ascending:true});
+  if(result.error)setError(result.error.message);else{setProducts(result.data||[]);setError('');}setLoading(false);
+ };
+ useEffect(()=>{loadProducts();},[]);
+ const go=next=>{setTab(next);setMobile(false);window.scrollTo({top:0,behavior:'smooth'});};
+ return <main className="page-shell"><header className="site-header"><button className="brand" onClick={()=>go('home')}><span className="brand-mark">B</span><span className="brand-name">BHARTIYA <span>LEATHER FASHIONS</span></span></button><nav className={'desktop-nav '+(mobile?'is-open':'')} aria-label="Main navigation">{TABS.map(([id,label])=><button key={id} className={tab===id?'active':''} onClick={()=>go(id)}>{label}</button>)}</nav><button className="header-link" onClick={()=>go('collection')}>Explore catalogue <ArrowRight size={15}/></button><button className="mobile-menu" onClick={()=>setMobile(v=>!v)} aria-label="Toggle navigation">{mobile?<X size={22}/>:<Menu size={22}/>}</button></header>
+ {tab==='home'&&<><section className="hero"><div className="hero-image" role="img" aria-label="Close-up of richly textured leather grain"/><div className="hero-content"><p className="eyebrow">BHARTIYA LEATHER FASHIONS</p><h1>Leather shaped<br/><em>by craft and character.</em></h1><p className="hero-copy">A considered collection of leather materials, bringing together distinctive grains, colours and finishes for global fashion and lifestyle applications.</p><button className="primary-link" onClick={()=>go('collection')}>Discover the collection <ArrowRight size={17}/></button></div><div className="hero-note"><span>BHARTIYA INTERNATIONAL</span><span>LEATHER · DESIGN · CRAFT</span></div></section><section className="home-intro"><p className="eyebrow">FROM MATERIAL TO FINISHED PRODUCT</p><h2>One connected approach<br/>to leather and design.</h2><p>Explore the leather catalogue and learn about Bhartiya's integrated experience across leather finishing, leatherwear and accessories.</p><button className="text-link" onClick={()=>go('about')}>Discover Bhartiya <ArrowRight size={16}/></button></section></>}
+ {tab==='collection'&&<Collection products={products} loading={loading} error={error} onOpen={setSelected}/>}
+ {tab==='about'&&<section className="info-page page-content"><p className="eyebrow">THE COMPANY</p><h2>Bhartiya International.<br/><em>A heritage in fashion since 1987.</em></h2><p className="lead">Bhartiya International Limited is an Indian manufacturer and exporter of fashion apparel and accessories, with capabilities spanning leatherwear, leather goods, design and leather processing.</p><div className="info-grid"><article><span>1987</span><h3>Fashion beginnings</h3><p>Bhartiya traces its beginnings in fashion to 1987, building experience in product development and manufacturing for international customers.</p></article><article><span>1990</span><h3>Leatherwear experience</h3><p>The company expanded into leather garments in 1990, developing leatherwear capabilities for global fashion customers.</p></article><article><span>MILAN</span><h3>Design connection</h3><p>Bhartiya's Milan design studio supports design research, product development and customer collaboration.</p></article></div><p className="source-note">Company background is summarised from publicly available Bhartiya International corporate information. This catalogue is presented as Bhartiya Leather Fashions.</p></section>}
+ {tab==='capabilities'&&<section className="info-page page-content"><p className="eyebrow">CAPABILITIES</p><h2>From leather processing<br/><em>to fashion applications.</em></h2><div className="capability-grid"><article><Layers/><h3>Leather finishing</h3><p>Leather processing and finishing capabilities support material development, colour, handle and finish requirements.</p></article><article><Factory/><h3>Leatherwear</h3><p>Leather garment manufacturing experience serving international fashion customers since 1990.</p></article><article><ShieldCheck/><h3>Leather accessories</h3><p>Product capabilities include leather bags, belts, wallets and small leather goods.</p></article></div><p className="source-note">Capabilities are summarised from Bhartiya International's published company profile; specific production availability should be confirmed with the company.</p></section>}
+ {tab==='contact'&&<section className="info-page page-content contact-page"><p className="eyebrow">GET IN TOUCH</p><h2>Start a conversation<br/><em>with Bhartiya.</em></h2><p className="lead">For company information and business enquiries, please contact Bhartiya International through its published corporate channels.</p><div className="contact-list"><p><MapPin/><span><strong>Registered office</strong>56/7, Nallambakkam Village, Via Vandalur, Chennai – 600048, Tamil Nadu, India</span></p><p><Phone/><span><strong>Telephone</strong>+91 95510 50418–21</span></p><p><Mail/><span><strong>Corporate email</strong><a href="mailto:bhartiya@bhartiya.com">bhartiya@bhartiya.com</a></span></p></div><a className="primary-link contact-website" href="https://www.bhartiya.com/" target="_blank" rel="noreferrer">Visit corporate website <ArrowUpRight size={16}/></a><p className="source-note">Contact details are from publicly available company disclosures. Confirm the appropriate contact for product or sales enquiries before sharing confidential information.</p></section>}
+ {tab==='admin'&&<AdminPanel onProductsChanged={loadProducts}/>}
+ <footer className="site-footer"><button className="footer-brand" onClick={()=>go('home')}>BHARTIYA LEATHER FASHIONS</button><span>Leather · Design · Craft</span><button className="footer-contact" onClick={()=>go('contact')}>CONTACT</button><span className="footer-version">Catalogue v{packageInfo.version}</span></footer>{selected&&<ImageViewer product={selected} onClose={()=>setSelected(null)}/>}</main>;
 }
