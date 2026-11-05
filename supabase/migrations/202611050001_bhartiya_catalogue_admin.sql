@@ -1,14 +1,7 @@
 -- Bhartiya Leather Fashions catalogue extension
 -- Run this script in Supabase SQL Editor as the project owner.
 -- Existing leather_products rows and existing image objects are preserved.
-
-alter table public.leather_products
-  add column if not exists collection_name text,
-  add column if not exists finish text,
-  add column if not exists grain text,
-  add column if not exists application text,
-  add column if not exists description text,
-  add column if not exists remarks text;
+-- No new article-detail columns are required; admin uses the existing catalogue fields.
 
 create table if not exists public.catalogue_admins (
   user_id uuid primary key references auth.users(id) on delete cascade,
