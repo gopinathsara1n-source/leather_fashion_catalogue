@@ -363,8 +363,36 @@ export default function AdminPanel({ onProductsChanged }) {
           </label>)}
         </div>
         <div className="admin-upload-grid">
-          <label><span>Replace main leather photo (optional)</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={e => setMainFile(e.target.files?.[0] || null)}/>{mainFile && <small>{mainFile.name}</small>}{form.main_photo && !mainFile && <img src={getLeatherImage(form.main_photo)} alt="Current main leather"/></label>
-          <label><span>Replace close-up photo (optional)</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={e => setCloseupFile(e.target.files?.[0] || null)}/>{closeupFile && <small>{closeupFile.name}</small>}{form.closeup_photo && !closeupFile && <img src={getLeatherImage(form.closeup_photo)} alt="Current close-up leather"/></label>
+          <label>
+            <span>Replace main leather photo (optional)</span>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={e => setMainFile(e.target.files?.[0] || null)}
+            />
+            {mainFile && <small>{mainFile.name}</small>}
+            {form.main_photo && !mainFile && (
+              <img
+                src={getLeatherImage(form.main_photo)}
+                alt="Current main leather"
+              />
+            )}
+          </label>
+          <label>
+            <span>Replace close-up photo (optional)</span>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={e => setCloseupFile(e.target.files?.[0] || null)}
+            />
+            {closeupFile && <small>{closeupFile.name}</small>}
+            {form.closeup_photo && !closeupFile && (
+              <img
+                src={getLeatherImage(form.closeup_photo)}
+                alt="Current close-up leather"
+              />
+            )}
+          </label>
         </div>
         <label className="admin-active"><input type="checkbox" checked={form.is_active !== false} onChange={e => setForm(current => ({ ...current, is_active: e.target.checked }))}/> Show this article in the public catalogue</label>
         <div className="admin-form-actions"><button className="primary-link admin-save" type="submit" disabled={saving}><Save size={16}/>{saving ? 'Updating…' : 'Update article'}</button><button type="button" className="admin-cancel" onClick={() => { setEditing(false); setForm(EMPTY); setMainFile(null); setCloseupFile(null); }}>Cancel</button></div>
