@@ -22,7 +22,7 @@ export default function AdminPanel({ onProductsChanged }) {
     if(!supabase) return;
     supabase.auth.getSession().then(({data})=>{if(data.session?.user) verifyAdmin(data.session.user);});
     const {data:listener}=supabase.auth.onAuthStateChange((_event,session)=>{
-      if(session?.user) verifyAdmin(session.user); else {setUser(null);setAuthorized(false);}
+      if(session?.user) window.setTimeout(()=>verifyAdmin(session.user),0); else {setUser(null);setAuthorized(false);}
     });
     return ()=>listener.subscription.unsubscribe();
   },[]);
