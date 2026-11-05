@@ -173,7 +173,7 @@ h2 { font-size: clamp(38px, 5vw, 62px); line-height: 1.12; letter-spacing: -.025
 
 
 /* Bhartiya Leather Fashions brand and tab navigation */
-.site-header { background: rgba(28,20,15,.22); backdrop-filter: blur(2px); }
+.site-header { background: #211a16; backdrop-filter: none; }
 .brand, .header-link, .footer-brand, .footer-contact, .desktop-nav button, .mobile-menu, .text-link { border: 0; cursor: pointer; font: inherit; }
 .brand { background: transparent; text-align: left; }
 .brand-mark { font-weight: 600; }
@@ -254,4 +254,49 @@ h2 { font-size: clamp(38px, 5vw, 62px); line-height: 1.12; letter-spacing: -.025
  .page-content{padding-top:110px}.info-page{padding:110px 7% 80px}.info-grid,.capability-grid,.admin-field-grid,.admin-upload-grid{grid-template-columns:1fr}
  .admin-login{padding:25px 20px}.admin-form{padding:19px 14px}.admin-heading{align-items:flex-start;flex-direction:column}.admin-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}.admin-row-actions{grid-column:1/-1;justify-content:flex-start}.admin-row .status-active,.admin-row .status-inactive{justify-self:end}
  .home-intro{padding:75px 7%}.contact-list p{font-size:12px}
+}
+\n
+.admin-tabs { display:flex; gap:8px; margin:0 0 22px; padding:7px; border:1px solid var(--line); background:#eee6dc; }
+.admin-tabs button { flex:1; min-height:44px; padding:11px 16px; border:1px solid transparent; background:transparent; color:#765f4d; font-size:11px; font-weight:600; letter-spacing:.04em; cursor:pointer; transition:background .2s,color .2s,border-color .2s; }
+.admin-tabs button:hover { color:#3c2d23; background:rgba(255,255,255,.45); }
+.admin-tabs button.active { color:#f5f0e9; background:#211a16; border-color:#211a16; }
+.admin-workspace { padding:28px; border:1px solid var(--line); background:rgba(255,255,255,.3); }
+.admin-workspace > .admin-form-heading { margin-bottom:20px; }
+.admin-workspace .admin-form-heading h3 { margin:0; color:#30251e; font:25px 'Playfair Display',serif; }
+.admin-workspace .admin-form-heading p { margin:7px 0 0; color:#897a6e; font-size:11px; line-height:1.6; }
+.admin-search { display:flex; align-items:center; gap:10px; max-width:620px; margin:0 0 18px; padding:0 13px; border:1px solid var(--line); background:#fbf8f4; color:#8d7968; }
+.admin-search input { width:100%; min-width:0; padding:13px 0; border:0; outline:0; background:transparent; color:var(--ink); font:12px 'DM Sans',sans-serif; }
+.admin-select-label { display:grid; gap:8px; max-width:620px; color:#796b60; font-size:10px; letter-spacing:.06em; text-transform:uppercase; }
+.admin-select-label select { width:100%; padding:13px; border:1px solid var(--line); background:#fbf8f4; color:var(--ink); font:12px 'DM Sans',sans-serif; text-transform:none; }
+.admin-empty { padding:15px; color:#897a6e; font-size:12px; background:#eee6dc; }
+.admin-selected-card { display:flex; align-items:center; justify-content:space-between; gap:18px; max-width:760px; margin-top:22px; padding:18px; border:1px solid var(--line); background:#fbf8f4; }
+.admin-selected-card > div { display:grid; gap:6px; }
+.admin-selected-card strong { color:#3c2d23; font-size:13px; }
+.admin-selected-card span,.admin-current-id { color:#897a6e; font-size:11px; }
+.admin-action-button { margin:0; border:0; cursor:pointer; white-space:nowrap; }
+.admin-edit-form { margin-top:24px; }
+.admin-current-id { font-family:'DM Sans',sans-serif; }
+.admin-form-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:18px; }
+.admin-form-actions .primary-link { margin-top:0; }
+.admin-cancel { padding:14px 18px; border:1px solid var(--line); background:transparent; color:#76543c; font-size:11px; cursor:pointer; }
+.admin-delete-preview { display:grid; grid-template-columns:minmax(160px,240px) minmax(0,1fr); gap:24px; max-width:850px; margin-top:24px; padding:20px; border:1px solid #d8b8a7; background:#fbf5f1; }
+.admin-delete-preview > img { width:100%; height:190px; object-fit:contain; background:#eee6dc; }
+.admin-delete-details { display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
+.admin-caution { display:flex; align-items:center; gap:7px; margin:0; color:#a34f3d; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.admin-delete-details h4 { margin:0; color:#30251e; font:24px 'Playfair Display',serif; }
+.admin-delete-details > strong { color:#76543c; font-size:12px; }
+.admin-delete-details > span,.admin-delete-details > p:not(.admin-caution) { color:#897a6e; font-size:11px; line-height:1.7; }
+.admin-delete-confirm { display:inline-flex; align-items:center; gap:9px; margin-top:6px; padding:12px 16px; border:1px solid #a34f3d; background:#a34f3d; color:white; font-size:11px; font-weight:700; cursor:pointer; }
+.admin-delete-confirm:disabled { opacity:.6; cursor:wait; }
+.admin-record-count { display:flex; align-items:center; gap:8px; margin-top:20px; color:#897a6e; font-size:11px; }
+.admin-message-success { border-left-color:#4f7656; background:#edf2ec; color:#426348; }
+.admin-message-warning { border-left-color:#b98760; background:#f5eee5; color:#76543c; }
+@media(max-width:700px) {
+ .admin-tabs { gap:4px; padding:5px; }
+ .admin-tabs button { padding:10px 5px; font-size:10px; }
+ .admin-workspace { padding:19px 14px; }
+ .admin-selected-card { align-items:flex-start; flex-direction:column; }
+ .admin-delete-preview { grid-template-columns:1fr; }
+ .admin-delete-preview > img { max-width:100%; height:210px; }
+ .admin-action-button { width:100%; justify-content:center; }
 }
