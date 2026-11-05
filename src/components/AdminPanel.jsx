@@ -19,23 +19,18 @@ const FIELDS = [
 ];
 
 function nextLeatherId(products) {
-  const families = new Map();
-  products.forEach(({ leather_id }) => {
-    const match = String(leather_id || '').trim().match(/^(.*?)(\\d+)$/);
-    if (!match) return;
-    const [, prefix, digits] = match;
-    const entry = families.get(prefix) || { count: 0, max: -1, width: digits.length };
-    entry.count += 1;
-    entry.max = Math.max(entry.max, Number(digits));
-    entry.width = Math.max(entry.width, digits.length);
-    families.set(prefix, entry);
-  });
-  const best = [...families.entries()].sort((a, b) =>
-    b[1].count - a[1].count || b[1].max - a[1].max
-  )[0];
-  if (!best) return '';
-  const [prefix, data] = best;
-  return prefix + String(data.max + 1).padStart(data.width, '0');
+  const usedNumbers = products
+    .map(({ leather_id }) => {
+      const match = String(leather_id || '').trim().match(/^BIL(\\d{5})$/i);
+      return match ? Number(match[1]) : null;
+    })
+    .filter(number => number !== null);
+
+  let nextNumber = usedNumbers.length ? Math.max(...usedNumbers) + 1 : 1;
+  const used = new Set(usedNumbers);
+  while (used.has(nextNumber)) nextNumber += 1;
+
+  return `BIL${String(nextNumber).padStart(5, '0')}`;
 }
 
 function isStoragePath(value) {
