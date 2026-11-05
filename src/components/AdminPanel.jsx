@@ -3,17 +3,19 @@ import { LockKeyhole, LogOut, Plus, Save, Trash2, AlertTriangle, Check } from 'l
 import { getLeatherImage, isSupabaseConfigured, supabase } from '../services/supabase.js';
 
 const EMPTY = {
-  leather_id: '', article_name: '', animal: '', color: '', thickness: '',
-  tannage: '', origin: '', is_active: true,
+  leather_id: '', article_name: '', collection_name: '', animal: '', color: '', thickness: '',
+  tannage: '', origin: '', finish: '', is_active: true,
 };
 const FIELDS = [
   ['leather_id', 'Leather ID', true],
   ['article_name', 'Article name', true],
+  ['collection_name', 'Collection / category'],
   ['animal', 'Animal'],
   ['color', 'Colour', true],
   ['thickness', 'Thickness (mm)'],
   ['tannage', 'Tannage'],
   ['origin', 'Origin'],
+  ['finish', 'Finish'],
 ];
 
 function nextLeatherId(products) {
@@ -144,11 +146,13 @@ export default function AdminPanel({ onProductsChanged }) {
       ...EMPTY,
       leather_id: product.leather_id || '',
       article_name: product.article_name || '',
+      collection_name: product.collection_name || '',
       animal: product.animal || '',
       color: product.color || '',
       thickness: product.thickness || '',
       tannage: product.tannage || '',
       origin: product.origin || '',
+      finish: product.finish || '',
       is_active: product.is_active !== false,
       main_photo: product.main_photo || '',
       closeup_photo: product.closeup_photo || '',
@@ -194,11 +198,13 @@ export default function AdminPanel({ onProductsChanged }) {
       const payload = {
         leather_id: form.leather_id.trim(),
         article_name: form.article_name.trim(),
+        collection_name: form.collection_name.trim() || null,
         animal: form.animal || null,
         color: form.color.trim(),
         thickness: form.thickness.trim() || null,
         tannage: form.tannage.trim() || null,
         origin: form.origin.trim() || null,
+        finish: form.finish.trim() || null,
         is_active: form.is_active !== false,
       };
       if (mainFile) {
@@ -218,7 +224,7 @@ export default function AdminPanel({ onProductsChanged }) {
       if (result.error) throw result.error;
 
       setNotice(editing ? 'Article updated successfully.' : 'New article created successfully.', 'success');
-      setForm({ ...EMPTY, leather_id: suggestedId });
+      setForm(EMPTY);
       setEditing(false);
       setMainFile(null);
       setCloseupFile(null);
@@ -335,7 +341,7 @@ export default function AdminPanel({ onProductsChanged }) {
     <div className="admin-list">
       <h3>Existing articles ({products.length})</h3>
       {products.map(product => <div className="admin-row" key={product.leather_id}>
-        <div><strong>{product.article_name}</strong><span>{product.leather_id} · {product.color || 'No colour'} · {product.animal || 'Animal not set'} · {product.thickness || 'Thickness not set'} · {product.tannage || 'Tannage not set'} · {product.origin || 'Origin not set'}</span></div>
+        <div><strong>{product.article_name}</strong><span>{product.leather_id} · {product.color || 'No colour'} · {product.collection_name || product.animal || 'Leather'} · {product.animal || 'Animal not set'} · {product.thickness || 'Thickness not set'} · {product.tannage || 'Tannage not set'} · {product.origin || 'Origin not set'}</span></div>
         <span className={product.is_active ? 'status-active' : 'status-inactive'}>{product.is_active ? 'Active' : 'Hidden'}</span>
         <button type="button" onClick={() => editProduct(product)}>Edit</button>
         <button type="button" onClick={() => toggleActive(product)}>{product.is_active ? 'Hide' : 'Publish'}</button>
