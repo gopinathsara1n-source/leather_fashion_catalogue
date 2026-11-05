@@ -106,3 +106,47 @@ h2 { font-size: clamp(38px, 5vw, 62px); line-height: 1.12; letter-spacing: -.025
   .product-grid { grid-template-columns: 1fr; }
   .product-image-wrap { aspect-ratio: 4 / 4.5; }
 }
+
+
+/* Catalogue filters */
+.filter-panel { margin: -8px 0 30px; padding: 18px 20px 20px; border: 1px solid var(--line); background: rgba(255,255,255,.28); }
+.filter-panel-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: #49382d; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.filter-panel-heading button { border: 0; padding: 4px 0; background: transparent; color: #986b49; font-size: 11px; cursor: pointer; text-transform: none; letter-spacing: .02em; }
+.filter-panel-heading button:disabled { opacity: .35; cursor: default; }
+.filter-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.filter-field { display: flex; min-width: 0; flex-direction: column; gap: 7px; color: #88796d; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.filter-field select { width: 100%; min-width: 0; padding: 10px 28px 10px 10px; border: 1px solid var(--line); border-radius: 0; outline-color: var(--copper); background: #fbf8f4; color: var(--ink); font-size: 12px; letter-spacing: 0; text-transform: none; }
+.product-image-button { display: block; width: 100%; padding: 0; border: 0; background: transparent; text-align: left; cursor: zoom-in; }
+.image-zoom-hint { position: absolute; right: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; background: rgba(33,26,22,.82); color: #f5f0e9; font-size: 10px; opacity: 0; transition: opacity .2s ease; }
+.product-card:hover .image-zoom-hint, .product-image-button:focus-visible .image-zoom-hint { opacity: 1; }
+.viewer-backdrop { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(18,14,11,.86); backdrop-filter: blur(5px); }
+.image-viewer { display: flex; width: min(100%, 1000px); max-height: min(94vh, 1000px); flex-direction: column; overflow: hidden; background: #f5f0e9; box-shadow: 0 25px 90px rgba(0,0,0,.35); }
+.viewer-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 17px 22px; border-bottom: 1px solid var(--line); }
+.viewer-kicker { margin: 0 0 4px; color: #986b49; font-size: 9px; letter-spacing: .16em; }
+.viewer-header h3 { margin: 0; color: var(--ink); font-size: 22px; }
+.viewer-header span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+.viewer-close { display: grid; width: 38px; height: 38px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.viewer-stage { position: relative; display: grid; min-height: 240px; flex: 1; place-items: center; overflow: hidden; background: #211a16; touch-action: none; cursor: grab; }
+.viewer-stage:active { cursor: grabbing; }
+.viewer-image { display: block; max-width: 100%; max-height: 64vh; object-fit: contain; user-select: none; pointer-events: none; transition: transform .08s linear; }
+.viewer-image.is-zoomed { max-width: none; max-height: none; }
+.viewer-zoom-level { position: absolute; right: 14px; top: 14px; padding: 6px 8px; background: rgba(0,0,0,.58); color: white; font-size: 10px; }
+.viewer-controls { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 13px 18px; border-top: 1px solid var(--line); }
+.viewer-image-switch, .viewer-zoom-controls { display: flex; align-items: center; gap: 7px; }
+.viewer-image-switch button, .viewer-zoom-controls button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 35px; padding: 8px 11px; border: 1px solid #d9cbbd; background: transparent; color: #49382d; font-size: 11px; cursor: pointer; }
+.viewer-image-switch button.active { border-color: #49382d; background: #49382d; color: #f5f0e9; }
+.viewer-image-switch button:disabled, .viewer-zoom-controls button:disabled { opacity: .35; cursor: not-allowed; }
+.viewer-tip { margin: 0; padding: 0 18px 13px; color: #88796d; font-size: 10px; text-align: center; }
+@media (max-width: 900px) { .filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 600px) {
+  .filter-panel { padding: 15px 12px; }
+  .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+  .viewer-backdrop { padding: 8px; }
+  .image-viewer { max-height: 96vh; }
+  .viewer-header { padding: 12px 14px; }
+  .viewer-stage { min-height: 220px; }
+  .viewer-image { max-height: 58vh; }
+  .viewer-controls { align-items: stretch; flex-direction: column; padding: 10px 12px; }
+  .viewer-image-switch, .viewer-zoom-controls { justify-content: center; flex-wrap: wrap; }
+  .viewer-image-switch button { flex: 1; }
+}
