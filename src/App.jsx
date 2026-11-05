@@ -167,7 +167,7 @@ export default function App() {
       <footer className="site-footer" id="contact">
         <a className="footer-brand" href="#home">LEATHER COLLECTION</a>
         <span>Selected with care. Made to inspire.</span>
-        <a href="mailto:info@example.com">Contact our team <ArrowUpRight size={14} /></a>
+        <span className="footer-contact">CONTACT &amp; SUPPORT</span>
       </footer>
     </main>
   );
