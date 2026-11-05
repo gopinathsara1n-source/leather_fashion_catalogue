@@ -54,6 +54,7 @@ export default function AdminPanel({ onProductsChanged }) {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('info');
   const [products, setProducts] = useState([]);
+  const [productsLoaded, setProductsLoaded] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [editing, setEditing] = useState(false);
   const [mainFile, setMainFile] = useState(null);
@@ -115,8 +116,13 @@ export default function AdminPanel({ onProductsChanged }) {
   const loadAdminProducts = async () => {
     const { data, error } = await supabase.from('leather_products')
       .select('*').order('article_name', { ascending: true });
-    if (error) setNotice(error.message, 'error');
-    else setProducts(data || []);
+    if (error) {
+      setProductsLoaded(false);
+      setNotice(error.message, 'error');
+    } else {
+      setProducts(data || []);
+      setProductsLoaded(true);
+    }
   };
 
   useEffect(() => {
@@ -124,10 +130,10 @@ export default function AdminPanel({ onProductsChanged }) {
   }, [authorized]);
 
   useEffect(() => {
-    if (authorized && activeTab === 'add' && !editing && !form.leather_id && suggestedId) {
+    if (authorized && productsLoaded && activeTab === 'add' && !editing && !form.leather_id && suggestedId) {
       setForm(current => current.leather_id ? current : { ...current, leather_id: suggestedId });
     }
-  }, [authorized, activeTab, editing, form.leather_id, suggestedId]);
+  }, [authorized, productsLoaded, activeTab, editing, form.leather_id, suggestedId]);
 
   const login = async e => {
     e.preventDefault();
@@ -145,7 +151,7 @@ export default function AdminPanel({ onProductsChanged }) {
   };
 
   const resetForm = () => {
-    setForm({ ...EMPTY, leather_id: suggestedId });
+    setForm({ ...EMPTY, leather_id: productsLoaded ? suggestedId : '' });
     setEditing(false);
     setMainFile(null);
     setCloseupFile(null);
