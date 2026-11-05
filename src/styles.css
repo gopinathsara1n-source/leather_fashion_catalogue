@@ -226,6 +226,8 @@ h2 { font-size: clamp(38px, 5vw, 62px); line-height: 1.12; letter-spacing: -.025
 .admin-form { padding: 28px; border: 1px solid var(--line); background: rgba(255,255,255,.3); }
 .admin-form-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 22px; }
 .admin-form-heading h3, .admin-list h3 { margin: 0; color: #30251e; font: 25px 'Playfair Display',serif; }
+.admin-form-note { margin: -10px 0 20px; color: #897a6e; font-size: 11px; }
+.admin-field-grid input:read-only { background: #eee8e1; color: #897a6e; cursor: not-allowed; }
 .admin-field-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 17px; }
 .admin-wide { margin-top: 17px; }
 .admin-wide textarea { resize: vertical; }
@@ -240,13 +242,16 @@ h2 { font-size: clamp(38px, 5vw, 62px); line-height: 1.12; letter-spacing: -.025
 .admin-save:disabled { opacity: .6; cursor: wait; }
 .admin-list { margin-top: 42px; }
 .admin-list h3 { margin-bottom: 17px; }
-.admin-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; align-items: center; gap: 12px; padding: 13px 0; border-top: 1px solid var(--line); }
+.admin-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto auto; align-items: center; gap: 12px; padding: 13px 0; border-top: 1px solid var(--line); }
 .admin-row > div { display: grid; gap: 4px; }
 .admin-row strong { color: #3c2d23; font-size: 12px; }
 .admin-row span { color: #897a6e; font-size: 10px; }
 .admin-row button { padding: 7px 10px; border: 1px solid var(--line); background: transparent; color: #76543c; font-size: 10px; cursor: pointer; }
 .admin-row .status-active { color: #4f7656; }
 .admin-row .status-inactive { color: #9b6254; }
+.admin-row button:disabled { opacity: .5; cursor: wait; }
+.admin-row .admin-delete { display: inline-flex; align-items: center; gap: 5px; border-color: #d8b9ae; color: #9b4d3f; }
+.admin-empty { color: #897a6e; font-size: 12px; padding: 15px 0; }
 @media(max-width:1000px){.desktop-nav{gap:15px}.desktop-nav button{font-size:10px}.info-grid,.capability-grid{gap:14px}}
 @media(max-width:700px){
  .site-header{background:#211a16}.desktop-nav{display:none;position:absolute;top:70px;left:0;right:0;padding:22px 7%;flex-direction:column;align-items:flex-start;gap:15px;background:#211a16;border-top:1px solid rgba(255,255,255,.12)}
