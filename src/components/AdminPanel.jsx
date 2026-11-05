@@ -28,6 +28,30 @@ function storagePath(value) {
   return value && !/^https?:\/\//i.test(value) ? value : null;
 }
 
+// Uses the existing ID pattern (prefix + trailing number), retaining its zero-padding.
+function getNextLeatherId(items) {
+  const families = new Map();
+  items.forEach(({ leather_id }) => {
+    const match = String(leather_id || '').trim().match(/^(.*?)(\d+)$/);
+    if (!match) return;
+    const prefix = match[1];
+    const numberText = match[2];
+    const number = Number(numberText);
+    const family = families.get(prefix) || { count: 0, max: -1, width: numberText.length };
+    family.count += 1;
+    if (number > family.max) {
+      family.max = number;
+      family.width = numberText.length;
+    }
+    families.set(prefix, family);
+  });
+  if (!families.size) return '';
+  const [prefix, family] = [...families.entries()].sort((a, b) =>
+    b[1].count - a[1].count || b[1].max - a[1].max
+  )[0];
+  return prefix + String(family.max + 1).padStart(family.width, '0');
+}
+
 export default function AdminPanel({ onProductsChanged }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,6 +66,16 @@ export default function AdminPanel({ onProductsChanged }) {
   const [closeupFile, setCloseupFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState('');
+
+  const suggestedLeatherId = getNextLeatherId(products);
+  const duplicateProduct = !editing && Boolean(form.leather_id.trim()) &&
+    products.some(product => String(product.leather_id).trim().toLowerCase() === form.leather_id.trim().toLowerCase());
+
+  useEffect(() => {
+    if (authorized && !editing && !form.leather_id && suggestedLeatherId) {
+      setForm(current => current.leather_id ? current : { ...current, leather_id: suggestedLeatherId });
+    }
+  }, [authorized, editing, form.leather_id, suggestedLeatherId]);
 
   const verifyAdmin = async (currentUser) => {
     if (!currentUser || !supabase) {
@@ -119,7 +153,7 @@ export default function AdminPanel({ onProductsChanged }) {
   const uploadImage = async (file, prefix) => {
     if (!file) return null;
     const safe = file.name.toLowerCase().replace(/[^a-z0-9.-]+/g, '-');
-    const path = \`catalogue/\${Date.now()}-\${prefix}-\${safe}\`;
+    const path = `catalogue/${Date.now()}-${prefix}-${safe}`;
     const { error } = await supabase.storage.from('leather-images').upload(path, file, {
       cacheControl: '3600',
       upsert: false,
@@ -131,6 +165,10 @@ export default function AdminPanel({ onProductsChanged }) {
 
   const saveProduct = async (e) => {
     e.preventDefault();
+    if (duplicateProduct) {
+      setMessage(`Leather ID "${form.leather_id.trim()}" already exists. Choose the suggested ID or enter another ID. Your other entries have been kept.`);
+      return;
+    }
     setSaving(true);
     setMessage('');
     try {
@@ -146,6 +184,18 @@ export default function AdminPanel({ onProductsChanged }) {
         closeup_photo: form.closeup_photo || null,
         is_active: form.is_active !== false,
       };
+
+      // Check the database too, so a recently-added ID is caught even if this page is stale.
+      if (!editing) {
+        const { data: existing, error: checkError } = await supabase.from('leather_products')
+          .select('leather_id').eq('leather_id', payload.leather_id).maybeSingle();
+        if (checkError) throw checkError;
+        if (existing) {
+          setMessage(`Leather ID "${payload.leather_id}" already exists. Your other entries have been kept; change only the Leather ID to continue.`);
+          return;
+        }
+      }
+
       const oldMain = form.main_photo;
       const oldCloseup = form.closeup_photo;
       if (mainFile) payload.main_photo = await uploadImage(mainFile, 'main');
@@ -170,7 +220,7 @@ export default function AdminPanel({ onProductsChanged }) {
       await loadAdminProducts();
       await onProductsChanged();
     } catch (err) {
-      setMessage(err.message || 'Unable to save article.');
+      setMessage(err.message || 'Unable to save article. Your form entries have been kept.');
     } finally {
       setSaving(false);
     }
@@ -189,7 +239,7 @@ export default function AdminPanel({ onProductsChanged }) {
 
   const deleteProduct = async (product) => {
     const confirmed = window.confirm(
-      \`Permanently delete "\${product.article_name}" (\${product.leather_id})? This cannot be undone.\`
+      `Permanently delete "${product.article_name}" (${product.leather_id})? This cannot be undone.`
     );
     if (!confirmed) return;
     setDeletingId(product.leather_id);
@@ -264,9 +314,20 @@ export default function AdminPanel({ onProductsChanged }) {
                   {['Cow', 'Buffalo', 'Sheep', 'Goat', 'Other'].map(value => <option key={value} value={value}>{value}</option>)}
                 </select>
               : <input required={required} readOnly={editing && key === 'leather_id'} value={form[key] || ''} onChange={e => setForm({ ...form, [key]: e.target.value })} />}
+            {key === 'leather_id' && !editing && suggestedLeatherId && (
+              <small className="admin-id-hint">Suggested next ID: <strong>{suggestedLeatherId}</strong></small>
+            )}
+            {key === 'leather_id' && duplicateProduct && (
+              <small className="admin-id-warning" role="alert">This Leather ID already exists. Other details are safe—change only this ID.</small>
+            )}
           </label>
         ))}
       </div>
+      {!editing && suggestedLeatherId && form.leather_id !== suggestedLeatherId && (
+        <button type="button" className="admin-secondary admin-use-suggestion" onClick={() => setForm(current => ({ ...current, leather_id: suggestedLeatherId }))}>
+          Use suggested ID: {suggestedLeatherId}
+        </button>
+      )}
       <div className="admin-upload-grid">
         <label><span>Main leather photo {editing ? '(optional replacement)' : '(required)'}</span>
           <input type="file" accept="image/*" onChange={e => setMainFile(e.target.files?.[0] || null)} />
@@ -283,7 +344,7 @@ export default function AdminPanel({ onProductsChanged }) {
         <input type="checkbox" checked={form.is_active !== false} onChange={e => setForm({ ...form, is_active: e.target.checked })} />
         Show this article in the public catalogue
       </label>
-      <button className="primary-link admin-save" type="submit" disabled={saving}>
+      <button className="primary-link admin-save" type="submit" disabled={saving || duplicateProduct}>
         <Save size={16} />{saving ? 'Saving…' : editing ? 'Update article' : 'Create article'}
       </button>
     </form>
