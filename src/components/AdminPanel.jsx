@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { LockKeyhole, LogOut, Plus, Save, Trash2, AlertTriangle, Check } from 'lucide-react';
+import { LockKeyhole, LogOut, Plus, Save, Trash2, AlertTriangle, Search, Pencil, CheckCircle2 } from 'lucide-react';
 import { getLeatherImage, isSupabaseConfigured, supabase } from '../services/supabase.js';
 
 const EMPTY = {
@@ -21,7 +21,7 @@ const FIELDS = [
 function nextLeatherId(products) {
   const families = new Map();
   products.forEach(({ leather_id }) => {
-    const match = String(leather_id || '').trim().match(/^(.*?)(\d+)$/);
+    const match = String(leather_id || '').trim().match(/^(.*?)(\\d+)$/);
     if (!match) return;
     const [, prefix, digits] = match;
     const entry = families.get(prefix) || { count: 0, max: -1, width: digits.length };
@@ -39,7 +39,14 @@ function nextLeatherId(products) {
 }
 
 function isStoragePath(value) {
-  return Boolean(value && !/^https?:\/\//i.test(value));
+  return Boolean(value && !/^https?:\\/\\//i.test(value));
+}
+
+function matchesSearch(product, query) {
+  const term = query.trim().toLowerCase();
+  if (!term) return true;
+  return [product.leather_id, product.article_name, product.color, product.collection_name]
+    .filter(Boolean).some(value => String(value).toLowerCase().includes(term));
 }
 
 export default function AdminPanel({ onProductsChanged }) {
@@ -57,12 +64,20 @@ export default function AdminPanel({ onProductsChanged }) {
   const [closeupFile, setCloseupFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState('');
+  const [activeTab, setActiveTab] = useState('add');
+  const [updateSearch, setUpdateSearch] = useState('');
+  const [deleteSearch, setDeleteSearch] = useState('');
+  const [selectedUpdateId, setSelectedUpdateId] = useState('');
+  const [selectedDeleteId, setSelectedDeleteId] = useState('');
 
   const suggestedId = useMemo(() => nextLeatherId(products), [products]);
   const duplicateId = useMemo(() => {
     if (editing || !form.leather_id.trim()) return false;
     return products.some(p => String(p.leather_id).trim().toLowerCase() === form.leather_id.trim().toLowerCase());
   }, [products, form.leather_id, editing]);
+  const updateMatches = useMemo(() => products.filter(p => matchesSearch(p, updateSearch)), [products, updateSearch]);
+  const deleteMatches = useMemo(() => products.filter(p => matchesSearch(p, deleteSearch)), [products, deleteSearch]);
+  const selectedForDelete = products.find(p => p.leather_id === selectedDeleteId);
 
   const setNotice = (text, type = 'info') => {
     setMessage(text);
@@ -113,10 +128,10 @@ export default function AdminPanel({ onProductsChanged }) {
   }, [authorized]);
 
   useEffect(() => {
-    if (authorized && !editing && !form.leather_id && suggestedId) {
+    if (authorized && activeTab === 'add' && !editing && !form.leather_id && suggestedId) {
       setForm(current => current.leather_id ? current : { ...current, leather_id: suggestedId });
     }
-  }, [authorized, editing, form.leather_id, suggestedId]);
+  }, [authorized, activeTab, editing, form.leather_id, suggestedId]);
 
   const login = async e => {
     e.preventDefault();
@@ -138,7 +153,6 @@ export default function AdminPanel({ onProductsChanged }) {
     setEditing(false);
     setMainFile(null);
     setCloseupFile(null);
-    setNotice('');
   };
 
   const editProduct = product => {
@@ -223,11 +237,13 @@ export default function AdminPanel({ onProductsChanged }) {
         : await supabase.from('leather_products').insert(payload);
       if (result.error) throw result.error;
 
-      setNotice(editing ? 'Article updated successfully.' : 'New article created successfully.', 'success');
+      const wasEditing = editing;
+      setNotice(wasEditing ? `Article "${form.article_name}" updated successfully.` : 'New article created successfully.', 'success');
       setForm(EMPTY);
       setEditing(false);
       setMainFile(null);
       setCloseupFile(null);
+      setSelectedUpdateId('');
       await loadAdminProducts();
       await onProductsChanged();
     } catch (error) {
@@ -240,7 +256,7 @@ export default function AdminPanel({ onProductsChanged }) {
 
   const deleteProduct = async product => {
     const confirmed = window.confirm(
-      `Permanently delete "${product.article_name}" (ID: ${product.leather_id})? This cannot be undone.`
+      `CAUTION: You are about to permanently delete this catalogue article.\\n\\nArticle: ${product.article_name}\\nLeather ID: ${product.leather_id}\\n\\nIts catalogue record and stored leather images will be removed. This action cannot be undone.\\n\\nDo you want to permanently delete this article?`
     );
     if (!confirmed) return;
     setDeletingId(product.leather_id);
@@ -256,25 +272,15 @@ export default function AdminPanel({ onProductsChanged }) {
         const { error: storageError } = await supabase.storage.from('leather-images').remove(imagePaths);
         if (storageError) storageWarning = ` The article was deleted, but an image could not be removed from storage: ${storageError.message}`;
       }
-      if (editing && form.leather_id === product.leather_id) resetForm();
+      setSelectedDeleteId('');
+      setDeleteSearch('');
       await loadAdminProducts();
       await onProductsChanged();
-      setNotice(`Article "${product.article_name}" deleted.${storageWarning}`, storageWarning ? 'warning' : 'success');
+      setNotice(`Article "${product.article_name}" permanently deleted.${storageWarning}`, storageWarning ? 'warning' : 'success');
     } catch (error) {
       setNotice(error.message || 'Unable to delete article.', 'error');
     } finally {
       setDeletingId('');
-    }
-  };
-
-  const toggleActive = async product => {
-    const { error } = await supabase.from('leather_products')
-      .update({ is_active: !product.is_active }).eq('leather_id', product.leather_id);
-    if (error) setNotice(error.message, 'error');
-    else {
-      await loadAdminProducts();
-      await onProductsChanged();
-      setNotice(product.is_active ? 'Article hidden from the public catalogue.' : 'Article published to the public catalogue.', 'success');
     }
   };
 
@@ -301,11 +307,17 @@ export default function AdminPanel({ onProductsChanged }) {
       <div><p className="eyebrow">AUTHORISED ACCESS</p><h2>Manage the<br/><em>leather catalogue.</em></h2><p>Signed in as {user?.email}</p></div>
       <button className="admin-logout" onClick={logout}><LogOut size={16}/> Sign out</button>
     </div>
-    {message && <p className={`admin-message admin-message-${messageType}`}>{message}</p>}
-    <form className="admin-form" onSubmit={saveProduct}>
+    <div className="admin-tabs" role="tablist" aria-label="Article management">
+      <button type="button" role="tab" aria-selected={activeTab === 'add'} className={activeTab === 'add' ? 'active' : ''} onClick={() => { setActiveTab('add'); setNotice(''); if (!editing) resetForm(); }}>Add New Article</button>
+      <button type="button" role="tab" aria-selected={activeTab === 'update'} className={activeTab === 'update' ? 'active' : ''} onClick={() => { setActiveTab('update'); setEditing(false); setForm(EMPTY); setMainFile(null); setCloseupFile(null); setNotice(''); }}>Update Article</button>
+      <button type="button" role="tab" aria-selected={activeTab === 'delete'} className={activeTab === 'delete' ? 'active' : ''} onClick={() => { setActiveTab('delete'); setEditing(false); setForm(EMPTY); setMainFile(null); setCloseupFile(null); setNotice(''); }}>Delete Article</button>
+    </div>
+    {message && <p className={`admin-message admin-message-${messageType}`} role="status">{message}</p>}
+
+    {activeTab === 'add' && <form className="admin-form" onSubmit={saveProduct}>
       <div className="admin-form-heading">
-        <h3>{editing ? 'Update article' : 'Create new article'}</h3>
-        <button type="button" className="admin-secondary" onClick={resetForm}><Plus size={15}/> New entry</button>
+        <h3>Create new article</h3>
+        <button type="button" className="admin-secondary" onClick={resetForm}><Plus size={15}/> Clear form</button>
       </div>
       <div className="admin-field-grid">
         {FIELDS.map(([key, label, required]) => <label key={key}>
@@ -315,42 +327,64 @@ export default function AdminPanel({ onProductsChanged }) {
                 <option value="">Select animal</option>
                 {['Cow', 'Buffalo', 'Sheep', 'Goat', 'Other'].map(value => <option key={value}>{value}</option>)}
               </select>
-            : <input
-                required={Boolean(required)}
-                readOnly={editing && key === 'leather_id'}
-                value={form[key] || ''}
-                onChange={e => setForm(current => ({ ...current, [key]: e.target.value }))}
-              />}
-          {key === 'leather_id' && !editing && suggestedId && <small className="admin-id-hint">Suggested next ID: <strong>{suggestedId}</strong> <button type="button" onClick={() => setForm(current => ({ ...current, leather_id: suggestedId }))}>Use suggestion</button></small>}
+            : <input required={Boolean(required)} value={form[key] || ''} onChange={e => setForm(current => ({ ...current, [key]: e.target.value }))}/>}
+          {key === 'leather_id' && suggestedId && <small className="admin-id-hint">Suggested next ID: <strong>{suggestedId}</strong> <button type="button" onClick={() => setForm(current => ({ ...current, leather_id: suggestedId }))}>Use suggestion</button></small>}
           {key === 'leather_id' && duplicateId && <small className="admin-id-warning"><AlertTriangle size={14}/> This Leather ID already exists. Other entered details are preserved.</small>}
         </label>)}
       </div>
       <div className="admin-upload-grid">
-        <label><span>Main leather photo {editing ? '(optional replacement)' : '(required)'}</span><input type="file" accept="image/*" onChange={e => setMainFile(e.target.files?.[0] || null)}/>{mainFile && <small>{mainFile.name}</small>}{editing && form.main_photo && !mainFile && <img src={getLeatherImage(form.main_photo)} alt="Current main leather"/>}</label>
-        <label><span>Close-up photo (optional)</span><input type="file" accept="image/*" onChange={e => setCloseupFile(e.target.files?.[0] || null)}/>{closeupFile && <small>{closeupFile.name}</small>}{editing && form.closeup_photo && !closeupFile && <img src={getLeatherImage(form.closeup_photo)} alt="Current close-up leather"/>}</label>
+        <label><span>Main leather photo (required)</span><input type="file" accept="image/*" onChange={e => setMainFile(e.target.files?.[0] || null)}/>{mainFile && <small>{mainFile.name}</small>}</label>
+        <label><span>Close-up photo (optional)</span><input type="file" accept="image/*" onChange={e => setCloseupFile(e.target.files?.[0] || null)}/>{closeupFile && <small>{closeupFile.name}</small>}</label>
       </div>
       <label className="admin-active"><input type="checkbox" checked={form.is_active !== false} onChange={e => setForm(current => ({ ...current, is_active: e.target.checked }))}/> Show this article in the public catalogue</label>
-      <div className="admin-form-actions">
-        <button className="primary-link admin-save" type="submit" disabled={saving || deletingId || (!editing && duplicateId)}>
-          <Save size={16}/>{saving ? 'Saving…' : editing ? 'Save changes' : 'Create article'}
-        </button>
-        {editing && <button type="button" className="admin-cancel" onClick={resetForm}>Cancel update</button>}
-      </div>
-    </form>
+      <div className="admin-form-actions"><button className="primary-link admin-save" type="submit" disabled={saving || Boolean(deletingId) || duplicateId}><Plus size={16}/>{saving ? 'Creating…' : 'Create article'}</button></div>
+    </form>}
 
-    <div className="admin-list">
-      <h3>Existing articles ({products.length})</h3>
-      {products.map(product => <div className="admin-row" key={product.leather_id}>
-        <div><strong>{product.article_name}</strong><span>{product.leather_id} · {product.color || 'No colour'} · {product.collection_name || product.animal || 'Leather'} · {product.animal || 'Animal not set'} · {product.thickness || 'Thickness not set'} · {product.tannage || 'Tannage not set'} · {product.origin || 'Origin not set'}</span></div>
-        <span className={product.is_active ? 'status-active' : 'status-inactive'}>{product.is_active ? 'Active' : 'Hidden'}</span>
-        <div className="admin-row-actions">
-          <button type="button" onClick={() => editProduct(product)}>Update</button>
-          <button type="button" onClick={() => toggleActive(product)}>{product.is_active ? 'Hide' : 'Publish'}</button>
-          <button type="button" className="admin-delete" disabled={Boolean(deletingId)} onClick={() => deleteProduct(product)}>
-            <Trash2 size={14}/>{deletingId === product.leather_id ? 'Deleting…' : 'Delete'}
-          </button>
+    {activeTab === 'update' && <div className="admin-workspace">
+      <div className="admin-form-heading"><div><h3>Find an article to update</h3><p>Search by article name, colour or Leather ID, then select the exact Leather ID.</p></div></div>
+      <label className="admin-search"><Search size={17}/><input type="search" value={updateSearch} onChange={e => { setUpdateSearch(e.target.value); setSelectedUpdateId(''); setEditing(false); }} placeholder="Search article name, colour or Leather ID…"/></label>
+      <label className="admin-select-label">Select Leather ID
+        <select value={selectedUpdateId} onChange={e => { setSelectedUpdateId(e.target.value); setEditing(false); }}>
+          <option value="">Choose an article…</option>
+          {updateMatches.map(p => <option key={p.leather_id} value={p.leather_id}>{p.leather_id} — {p.article_name}</option>)}
+        </select>
+      </label>
+      {updateMatches.length === 0 && <p className="admin-empty">No articles match your search.</p>}
+      {selectedUpdateId && !editing && <div className="admin-selected-card"><div><strong>{products.find(p => p.leather_id === selectedUpdateId)?.article_name}</strong><span>Leather ID: {selectedUpdateId}</span></div><button className="primary-link admin-action-button" type="button" onClick={() => { const product = products.find(p => p.leather_id === selectedUpdateId); if (product) editProduct(product); }}> <Pencil size={15}/> Load article for update</button></div>}
+      {editing && <form className="admin-form admin-edit-form" onSubmit={saveProduct}>
+        <div className="admin-form-heading"><h3>Update selected article</h3><span className="admin-current-id">ID: {form.leather_id}</span></div>
+        <div className="admin-field-grid">
+          {FIELDS.map(([key, label, required]) => <label key={key}>
+            {label}
+            {key === 'animal'
+              ? <select value={form[key] || ''} onChange={e => setForm(current => ({ ...current, [key]: e.target.value }))}><option value="">Select animal</option>{['Cow', 'Buffalo', 'Sheep', 'Goat', 'Other'].map(value => <option key={value}>{value}</option>)}</select>
+              : <input required={Boolean(required)} readOnly={key === 'leather_id'} value={form[key] || ''} onChange={e => setForm(current => ({ ...current, [key]: e.target.value }))}/>}
+          </label>)}
         </div>
-      </div>)}
-    </div>
+        <div className="admin-upload-grid">
+          <label><span>Replace main leather photo (optional)</span><input type="file" accept="image/*" onChange={e => setMainFile(e.target.files?.[0] || null)}/>{mainFile && <small>{mainFile.name}</small>}{form.main_photo && !mainFile && <img src={getLeatherImage(form.main_photo)} alt="Current main leather"/></label>
+          <label><span>Replace close-up photo (optional)</span><input type="file" accept="image/*" onChange={e => setCloseupFile(e.target.files?.[0] || null)}/>{closeupFile && <small>{closeupFile.name}</small>}{form.closeup_photo && !closeupFile && <img src={getLeatherImage(form.closeup_photo)} alt="Current close-up leather"/></label>
+        </div>
+        <label className="admin-active"><input type="checkbox" checked={form.is_active !== false} onChange={e => setForm(current => ({ ...current, is_active: e.target.checked }))}/> Show this article in the public catalogue</label>
+        <div className="admin-form-actions"><button className="primary-link admin-save" type="submit" disabled={saving}><Save size={16}/>{saving ? 'Updating…' : 'Update article'}</button><button type="button" className="admin-cancel" onClick={() => { setEditing(false); setForm(EMPTY); setMainFile(null); setCloseupFile(null); }}>Cancel</button></div>
+      </form>}
+    </div>}
+
+    {activeTab === 'delete' && <div className="admin-workspace admin-delete-workspace">
+      <div className="admin-form-heading"><div><h3>Find an article to delete</h3><p>Search the catalogue, then choose the Leather ID you want to remove.</p></div></div>
+      <label className="admin-search"><Search size={17}/><input type="search" value={deleteSearch} onChange={e => { setDeleteSearch(e.target.value); setSelectedDeleteId(''); }} placeholder="Search article name, colour or Leather ID…"/></label>
+      <label className="admin-select-label">Select Leather ID
+        <select value={selectedDeleteId} onChange={e => setSelectedDeleteId(e.target.value)}>
+          <option value="">Choose an article…</option>
+          {deleteMatches.map(p => <option key={p.leather_id} value={p.leather_id}>{p.leather_id} — {p.article_name}</option>)}
+        </select>
+      </label>
+      {deleteMatches.length === 0 && <p className="admin-empty">No articles match your search.</p>}
+      {selectedForDelete && <div className="admin-delete-preview">
+        {selectedForDelete.main_photo && <img src={getLeatherImage(selectedForDelete.main_photo)} alt={selectedForDelete.article_name}/>}
+        <div className="admin-delete-details"><p className="admin-caution"><AlertTriangle size={16}/> Permanent deletion</p><h4>{selectedForDelete.article_name}</h4><strong>{selectedForDelete.leather_id}</strong><span>{selectedForDelete.color || 'Colour not specified'} · {selectedForDelete.animal || 'Animal not specified'} · {selectedForDelete.thickness || 'Thickness not specified'}</span><p>This removes the article record and its stored catalogue photos. This action cannot be undone.</p><button type="button" className="admin-delete-confirm" disabled={Boolean(deletingId)} onClick={() => deleteProduct(selectedForDelete)}><Trash2 size={16}/>{deletingId === selectedForDelete.leather_id ? 'Deleting…' : 'Permanently delete article'}</button></div>
+      </div>}
+    </div>}
+    <div className="admin-record-count"><CheckCircle2 size={15}/> {products.length} articles currently in the catalogue</div>
   </section>;
 }
