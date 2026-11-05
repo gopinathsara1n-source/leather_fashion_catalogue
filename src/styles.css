@@ -170,3 +170,88 @@ h2 { font-size: clamp(38px, 5vw, 62px); line-height: 1.12; letter-spacing: -.025
 .site-footer { flex-wrap: wrap; }
 .footer-version { color: #8f8174; font-size: 9px; letter-spacing: .08em; font-variant-numeric: tabular-nums; }
 @media (max-width: 700px) { .footer-version { padding-top: 5px; border-top: 1px solid rgba(255,255,255,.12); width: 100%; } }
+
+
+/* Bhartiya Leather Fashions brand and tab navigation */
+.site-header { background: rgba(28,20,15,.22); backdrop-filter: blur(2px); }
+.brand, .header-link, .footer-brand, .footer-contact, .desktop-nav button, .mobile-menu, .text-link { border: 0; cursor: pointer; font: inherit; }
+.brand { background: transparent; text-align: left; }
+.brand-mark { font-weight: 600; }
+.desktop-nav button { padding: 9px 0; background: transparent; color: #e0d7cd; font-size: 11px; white-space: nowrap; transition: color .2s ease; }
+.desktop-nav button:hover, .desktop-nav button.active { color: #d3a47e; }
+.desktop-nav button.active { box-shadow: 0 1px 0 #c99a72; }
+.header-link { padding: 10px 0; background: transparent; color: #f5f0e9; display: inline-flex; align-items: center; gap: 9px; font-size: 11px; }
+.hero-image { background-image: linear-gradient(90deg, rgba(25,18,14,.94) 0%, rgba(25,18,14,.72) 48%, rgba(25,18,14,.2) 100%), url('https://images.unsplash.com/photo-1778883000392-fc0f8d12671d?auto=format&fit=crop&fm=jpg&q=85&w=2400'); }
+.home-intro { padding: 92px 8%; background: #eee6dc; text-align: center; }
+.home-intro h2 { margin: 18px auto; }
+.home-intro > p:not(.eyebrow) { max-width: 540px; margin: 20px auto; color: #75675c; font-size: 13px; line-height: 1.9; }
+.text-link { display: inline-flex; align-items: center; gap: 12px; padding: 10px 0; background: transparent; color: #8d6243; font-size: 12px; font-weight: 700; }
+.page-content { min-height: calc(100vh - 145px); padding-top: 145px; }
+.info-page { padding: 145px 9% 110px; background: var(--cream); }
+.info-page > h2 { max-width: 900px; margin: 18px 0 25px; }
+.info-page > h2 em { color: #a87955; }
+.lead { max-width: 760px; color: #706156; font-size: 16px; line-height: 1.9; }
+.info-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 28px; margin-top: 58px; }
+.info-grid article { padding: 28px 24px; border: 1px solid var(--line); background: rgba(255,255,255,.32); }
+.info-grid article > span { color: #a87955; font: 30px 'Playfair Display',serif; }
+.info-grid h3, .capability-grid h3 { margin: 18px 0 10px; color: #30251e; font-size: 23px; }
+.info-grid p, .capability-grid p { color: #78695e; font-size: 12px; line-height: 1.9; }
+.source-note { max-width: 760px; margin-top: 35px; color: #948477; font-size: 10px; line-height: 1.8; }
+.capability-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 22px; margin-top: 50px; }
+.capability-grid article { min-height: 230px; padding: 28px; background: #eee6dc; }
+.capability-grid svg { width: 27px; height: 27px; color: #a87955; stroke-width: 1.5; }
+.contact-list { display: grid; gap: 16px; max-width: 720px; margin: 38px 0; }
+.contact-list p { display: flex; align-items: flex-start; gap: 18px; margin: 0; padding: 18px 0; border-bottom: 1px solid var(--line); color: #75675c; font-size: 13px; line-height: 1.8; }
+.contact-list svg { flex: 0 0 20px; margin-top: 4px; color: #a87955; }
+.contact-list strong { display: block; color: #30251e; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.contact-list a { color: #8d6243; text-decoration: underline; }
+.contact-website { margin-top: 0; }
+.footer-brand, .footer-contact { padding: 0; background: transparent; color: #e9dfd4; font-size: 9px; letter-spacing: .13em; font-weight: 600; }
+.footer-contact { color: #d0a17b; }
+.admin-page { padding-bottom: 100px; }
+.admin-login { width: min(100%,480px); margin: 0 auto; padding: 38px; border: 1px solid var(--line); background: rgba(255,255,255,.34); }
+.admin-login > svg { color: #a87955; }
+.admin-login h2 { margin: 12px 0; font-size: 42px; }
+.admin-login > p:not(.eyebrow) { color: #78695e; font-size: 12px; line-height: 1.8; }
+.admin-login form { display: grid; gap: 16px; margin-top: 25px; }
+.admin-login label, .admin-field-grid label, .admin-wide { display: grid; gap: 7px; color: #796b60; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+.admin-login input, .admin-field-grid input, .admin-field-grid select, .admin-wide textarea { width: 100%; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 0; outline-color: var(--copper); background: #fbf8f4; color: var(--ink); font: 12px 'DM Sans',sans-serif; letter-spacing: 0; text-transform: none; }
+.admin-login .primary-link { justify-content: center; border: 0; cursor: pointer; }
+.admin-help { padding-top: 15px; border-top: 1px solid var(--line); }
+.admin-message { padding: 12px 15px; border-left: 3px solid #a87955; background: #eee6dc; color: #5f4938; font-size: 12px; line-height: 1.7; }
+.admin-heading { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 35px; }
+.admin-heading h2 { margin: 14px 0; }
+.admin-heading > div > p:last-child { color: #78695e; font-size: 12px; }
+.admin-logout, .admin-secondary { display: inline-flex; align-items: center; gap: 8px; padding: 10px 13px; border: 1px solid var(--line); background: transparent; color: #604b3a; font-size: 11px; cursor: pointer; }
+.admin-form { padding: 28px; border: 1px solid var(--line); background: rgba(255,255,255,.3); }
+.admin-form-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 22px; }
+.admin-form-heading h3, .admin-list h3 { margin: 0; color: #30251e; font: 25px 'Playfair Display',serif; }
+.admin-field-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 17px; }
+.admin-wide { margin-top: 17px; }
+.admin-wide textarea { resize: vertical; }
+.admin-upload-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; margin-top: 20px; }
+.admin-upload-grid label { display: grid; gap: 10px; padding: 16px; border: 1px dashed #cdbba9; color: #796b60; font-size: 11px; }
+.admin-upload-grid input { font-size: 11px; }
+.admin-upload-grid img { width: 100%; max-width: 190px; max-height: 130px; object-fit: contain; background: #eee6dc; }
+.admin-upload-grid small { color: #8d6243; }
+.admin-active { display: flex; align-items: center; gap: 9px; margin: 20px 0; color: #78695e; font-size: 11px; }
+.admin-active input { accent-color: #8d6243; }
+.admin-save { border: 0; cursor: pointer; }
+.admin-save:disabled { opacity: .6; cursor: wait; }
+.admin-list { margin-top: 42px; }
+.admin-list h3 { margin-bottom: 17px; }
+.admin-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto auto; align-items: center; gap: 12px; padding: 13px 0; border-top: 1px solid var(--line); }
+.admin-row > div { display: grid; gap: 4px; }
+.admin-row strong { color: #3c2d23; font-size: 12px; }
+.admin-row span { color: #897a6e; font-size: 10px; }
+.admin-row button { padding: 7px 10px; border: 1px solid var(--line); background: transparent; color: #76543c; font-size: 10px; cursor: pointer; }
+.admin-row .status-active { color: #4f7656; }
+.admin-row .status-inactive { color: #9b6254; }
+@media(max-width:1000px){.desktop-nav{gap:15px}.desktop-nav button{font-size:10px}.info-grid,.capability-grid{gap:14px}}
+@media(max-width:700px){
+ .site-header{background:#211a16}.desktop-nav{display:none;position:absolute;top:70px;left:0;right:0;padding:22px 7%;flex-direction:column;align-items:flex-start;gap:15px;background:#211a16;border-top:1px solid rgba(255,255,255,.12)}
+ .desktop-nav.is-open{display:flex}.desktop-nav button{font-size:12px}.header-link{display:none}.mobile-menu{display:block}
+ .page-content{padding-top:110px}.info-page{padding:110px 7% 80px}.info-grid,.capability-grid,.admin-field-grid,.admin-upload-grid{grid-template-columns:1fr}
+ .admin-login{padding:25px 20px}.admin-form{padding:19px 14px}.admin-heading{align-items:flex-start;flex-direction:column}.admin-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}.admin-row button{grid-row:2}.admin-row .status-active,.admin-row .status-inactive{justify-self:end}
+ .home-intro{padding:75px 7%}.contact-list p{font-size:12px}
+}
