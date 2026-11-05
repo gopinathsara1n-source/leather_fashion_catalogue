@@ -150,3 +150,17 @@ h2 { font-size: clamp(38px, 5vw, 62px); line-height: 1.12; letter-spacing: -.025
   .viewer-image-switch, .viewer-zoom-controls { justify-content: center; flex-wrap: wrap; }
   .viewer-image-switch button { flex: 1; }
 }
+
+
+/* Fine-grained zoom controls and source-image display */
+.viewer-image { max-width: 100%; max-height: 68vh; width: auto; height: auto; object-fit: contain; image-rendering: auto; }
+.viewer-image.is-zoomed { max-width: 100%; max-height: 68vh; }
+.viewer-stage { min-height: 280px; }
+.zoom-slider-control { display: inline-flex; min-width: 190px; align-items: center; gap: 9px; color: #78695e; font-size: 10px; white-space: nowrap; }
+.zoom-slider-control input { width: 125px; accent-color: #986b49; cursor: pointer; }
+.zoom-slider-control span:last-child { min-width: 38px; color: #49382d; text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) {
+  .viewer-image, .viewer-image.is-zoomed { max-height: 58vh; }
+  .zoom-slider-control { order: 3; width: 100%; justify-content: center; }
+  .zoom-slider-control input { flex: 1; max-width: 220px; }
+}
