@@ -62,6 +62,14 @@ function ImageViewer({ product, onClose }) {
   const resetView = () => { setZoom(1); setPosition({ x: 0, y: 0 }); };
   const changeImage = (closeup) => { setShowCloseup(closeup); resetView(); };
 
+  const handleWheel = (event) => {
+    event.preventDefault();
+    setZoom((value) => {
+      const change = event.deltaY < 0 ? 0.05 : -0.05;
+      return Math.min(4, Math.max(1, Number((value + change).toFixed(2))));
+    });
+  };
+
   return (
     <div className="viewer-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="image-viewer" role="dialog" aria-modal="true" aria-label={`${product.article_name} image viewer`}>
@@ -69,7 +77,7 @@ function ImageViewer({ product, onClose }) {
           <div><p className="viewer-kicker">{product.leather_id}</p><h3>{product.article_name}</h3><span>{product.color || 'Colour not specified'}</span></div>
           <button className="viewer-close" onClick={onClose} aria-label="Close image viewer"><X size={22} /></button>
         </div>
-        <div className="viewer-stage" onWheel={(event) => { event.preventDefault(); setZoom((value) => Math.min(4, Math.max(1, Number((value + (event.deltaY < 0 ? 0.05 : -0.05)).toFixed(2))))); }} onPointerDown={(event) => { if (zoom > 1) { event.currentTarget.setPointerCapture(event.pointerId); setDragging(true); setDragStart({ x: event.clientX - position.x, y: event.clientY - position.y }); } }} onPointerMove={(event) => { if (dragging) setPosition({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y }); }} onPointerUp={() => setDragging(false)} onPointerCancel={() => setDragging(false)}>
+        <div className="viewer-stage" onWheel={handleWheel} onPointerDown={(event) => { if (zoom > 1) { event.currentTarget.setPointerCapture(event.pointerId); setDragging(true); setDragStart({ x: event.clientX - position.x, y: event.clientY - position.y }); } }} onPointerMove={(event) => { if (dragging) setPosition({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y }); }} onPointerUp={() => setDragging(false)} onPointerCancel={() => setDragging(false)}>
           {image ? <img draggable="false" className="viewer-image" src={image} alt={`${product.article_name} leather detail`} style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})` }} /> : <div className="image-placeholder">IMAGE NOT AVAILABLE</div>}
           <span className="viewer-zoom-level">{Math.round(zoom * 100)}%</span>
         </div>
