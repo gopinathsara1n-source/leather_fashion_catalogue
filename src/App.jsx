@@ -1,6 +1,6 @@
 import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, ArrowUpRight, Menu, Search, X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Menu, Search, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { getLeatherImage, isSupabaseConfigured, supabase } from './services/supabase.js';
 
 const FILTER_FIELDS = [
@@ -51,8 +51,8 @@ function ImageViewer({ product, onClose }) {
   useEffect(() => {
     const onKeyDown = (event) => {
       if (event.key === 'Escape') onClose();
-      if (event.key === '+' || event.key === '=') setZoom((value) => Math.min(4, value + 0.25));
-      if (event.key === '-') setZoom((value) => Math.max(1, value - 0.25));
+      if (event.key === '+' || event.key === '=') setZoom((value) => Math.min(4, Number((value + 0.05).toFixed(2))));
+      if (event.key === '-') setZoom((value) => Math.max(1, Number((value - 0.05).toFixed(2))));
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -68,8 +68,8 @@ function ImageViewer({ product, onClose }) {
           <div><p className="viewer-kicker">{product.leather_id}</p><h3>{product.article_name}</h3><span>{product.color || 'Colour not specified'}</span></div>
           <button className="viewer-close" onClick={onClose} aria-label="Close image viewer"><X size={22} /></button>
         </div>
-        <div className="viewer-stage" onWheel={(event) => { event.preventDefault(); setZoom((value) => Math.min(4, Math.max(1, value + (event.deltaY < 0 ? 0.15 : -0.15)))); }} onPointerDown={(event) => { if (zoom > 1) { event.currentTarget.setPointerCapture(event.pointerId); setDragging(true); setDragStart({ x: event.clientX - position.x, y: event.clientY - position.y }); } }} onPointerMove={(event) => { if (dragging) setPosition({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y }); }} onPointerUp={() => setDragging(false)} onPointerCancel={() => setDragging(false)}>
-          {image ? <img draggable="false" className={`viewer-image ${zoom > 1 ? 'is-zoomed' : ''}`} src={image} alt={`${product.article_name} leather detail`} style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})` }} /> : <div className="image-placeholder">IMAGE NOT AVAILABLE</div>}
+        <div className="viewer-stage" onWheel={(event) => { event.preventDefault(); setZoom((value) => Math.min(4, Math.max(1, Number((value + (event.deltaY < 0 ? 0.05 : -0.05)).toFixed(2)))); }} onPointerDown={(event) => { if (zoom > 1) { event.currentTarget.setPointerCapture(event.pointerId); setDragging(true); setDragStart({ x: event.clientX - position.x, y: event.clientY - position.y }); } }} onPointerMove={(event) => { if (dragging) setPosition({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y }); }} onPointerUp={() => setDragging(false)} onPointerCancel={() => setDragging(false)}>
+          {image ? <img draggable="false" className="viewer-image" src={image} alt={`${product.article_name} leather detail`} style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})` }} /> : <div className="image-placeholder">IMAGE NOT AVAILABLE</div>}
           <span className="viewer-zoom-level">{Math.round(zoom * 100)}%</span>
         </div>
         <div className="viewer-controls">
@@ -78,12 +78,13 @@ function ImageViewer({ product, onClose }) {
             <button className={showCloseup ? 'active' : ''} onClick={() => changeImage(true)} disabled={!closeupImage}>Close-up {closeupImage ? '' : '(not available)'}</button>
           </div>
           <div className="viewer-zoom-controls">
-            <button onClick={() => setZoom((value) => Math.max(1, value - 0.25))} disabled={zoom <= 1} aria-label="Zoom out"><ZoomOut size={17} /></button>
-            <button onClick={() => setZoom((value) => Math.min(4, value + 0.25))} disabled={zoom >= 4} aria-label="Zoom in"><ZoomIn size={17} /></button>
+            <button onClick={() => setZoom((value) => Math.max(1, Number((value - 0.05).toFixed(2))))} disabled={zoom <= 1} aria-label="Zoom out"><ZoomOut size={17} /></button>
+            <button onClick={() => setZoom((value) => Math.min(4, Number((value + 0.05).toFixed(2))))} disabled={zoom >= 4} aria-label="Zoom in"><ZoomIn size={17} /></button>
+            <label className="zoom-slider-control"><span>Zoom</span><input type="range" min="1" max="4" step="0.05" value={zoom} onChange={(event) => setZoom(Number(event.target.value))} aria-label="Adjust image zoom" /><span>{Math.round(zoom * 100)}%</span></label>
             <button onClick={resetView} aria-label="Reset zoom and position"><RotateCcw size={16} /> Reset</button>
           </div>
         </div>
-        <p className="viewer-tip">Scroll to zoom · Drag image to move when zoomed in · Press Esc to close</p>
+        <p className="viewer-tip">Use the slider for fine zoom · Scroll to zoom · Drag to inspect details · Press Esc to close</p>
       </section>
     </div>
   );
