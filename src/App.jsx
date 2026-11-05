@@ -2,6 +2,7 @@ import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, ArrowUpRight, Menu, Search, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { getLeatherImage, isSupabaseConfigured, supabase } from './services/supabase.js';
+import packageInfo from '../package.json';
 
 const FILTER_FIELDS = [
   { key: 'color', label: 'Colour' },
@@ -174,7 +175,7 @@ export default function App() {
       </section>
 
       <section className="story-section" id="story"><p className="eyebrow">THE DETAILS MATTER</p><h2>Character you can<br /><em>see and feel.</em></h2><p>From natural grain to considered finishes, discover materials chosen for the details that make every article distinct.</p></section>
-      <footer className="site-footer" id="contact"><a className="footer-brand" href="#home">LEATHER COLLECTION</a><span>Selected with care. Made to inspire.</span><span className="footer-contact">CONTACT &amp; SUPPORT</span></footer>
+      <footer className="site-footer" id="contact"><a className="footer-brand" href="#home">LEATHER COLLECTION</a><span>Selected with care. Made to inspire.</span><span className="footer-contact">CONTACT &amp; SUPPORT</span><span className="footer-version">Version v{packageInfo.version} <span aria-hidden="true">·</span> Updated 05 Nov 2026</span></footer>
       {selectedProduct && <ImageViewer product={selectedProduct} onClose={() => setSelectedProduct(null)} />}
     </main>
   );
