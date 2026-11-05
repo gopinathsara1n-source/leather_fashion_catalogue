@@ -343,11 +343,13 @@ export default function AdminPanel({ onProductsChanged }) {
       {products.map(product => <div className="admin-row" key={product.leather_id}>
         <div><strong>{product.article_name}</strong><span>{product.leather_id} · {product.color || 'No colour'} · {product.collection_name || product.animal || 'Leather'} · {product.animal || 'Animal not set'} · {product.thickness || 'Thickness not set'} · {product.tannage || 'Tannage not set'} · {product.origin || 'Origin not set'}</span></div>
         <span className={product.is_active ? 'status-active' : 'status-inactive'}>{product.is_active ? 'Active' : 'Hidden'}</span>
-        <button type="button" onClick={() => editProduct(product)}>Edit</button>
-        <button type="button" onClick={() => toggleActive(product)}>{product.is_active ? 'Hide' : 'Publish'}</button>
-        <button type="button" className="admin-delete" disabled={Boolean(deletingId)} onClick={() => deleteProduct(product)}>
-          <Trash2 size={14}/>{deletingId === product.leather_id ? 'Deleting…' : 'Delete'}
-        </button>
+        <div className="admin-row-actions">
+          <button type="button" onClick={() => editProduct(product)}>Update</button>
+          <button type="button" onClick={() => toggleActive(product)}>{product.is_active ? 'Hide' : 'Publish'}</button>
+          <button type="button" className="admin-delete" disabled={Boolean(deletingId)} onClick={() => deleteProduct(product)}>
+            <Trash2 size={14}/>{deletingId === product.leather_id ? 'Deleting…' : 'Delete'}
+          </button>
+        </div>
       </div>)}
     </div>
   </section>;
