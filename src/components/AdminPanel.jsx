@@ -21,7 +21,7 @@ const FIELDS = [
 function nextLeatherId(products) {
   const usedNumbers = products
     .map(({ leather_id }) => {
-      const match = String(leather_id || '').trim().match(/^BIL(\\d{5})$/i);
+      const match = String(leather_id || '').trim().match(/^BIL(\d{5})$/i);
       return match ? Number(match[1]) : null;
     })
     .filter(number => number !== null);
