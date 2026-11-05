@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, ArrowUpRight, Menu, Search, X } from 'lucide-react';
 import { getLeatherImage, isSupabaseConfigured, supabase } from './services/supabase.js';
