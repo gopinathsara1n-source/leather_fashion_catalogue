@@ -17,7 +17,7 @@ const EMPTY = {
 const FIELDS = [
   ['leather_id', 'Leather ID', true],
   ['article_name', 'Article name', true],
-  ['animal', 'Animal', true],
+  ['animal', 'Animal', false],
   ['color', 'Colour', true],
   ['thickness', 'Thickness (mm)', false],
   ['tannage', 'Tannage', false],
@@ -157,14 +157,15 @@ export default function AdminPanel({ onProductsChanged }) {
         : await supabase.from('leather_products').insert(payload);
       if (result.error) throw result.error;
 
+      let notice = editing ? 'Article updated successfully.' : 'New article added successfully.';
       const replacedPaths = [];
       if (mainFile && storagePath(oldMain)) replacedPaths.push(storagePath(oldMain));
       if (closeupFile && storagePath(oldCloseup)) replacedPaths.push(storagePath(oldCloseup));
       if (replacedPaths.length) {
         const { error: cleanupError } = await supabase.storage.from('leather-images').remove(replacedPaths);
-        if (cleanupError) setMessage('Article saved, but an older replaced image could not be removed: ' + cleanupError.message);
+        if (cleanupError) notice = 'Article saved, but an older replaced image could not be removed: ' + cleanupError.message;
       }
-      if (!message) setMessage(editing ? 'Article updated successfully.' : 'New article added successfully.');
+      setMessage(notice);
       resetForm();
       await loadAdminProducts();
       await onProductsChanged();
