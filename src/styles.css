@@ -260,3 +260,11 @@ h2 { font-size: clamp(38px, 5vw, 62px); line-height: 1.12; letter-spacing: -.025
  .admin-login{padding:25px 20px}.admin-form{padding:19px 14px}.admin-heading{align-items:flex-start;flex-direction:column}.admin-row{grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px}.admin-row button{grid-row:2}.admin-row .status-active,.admin-row .status-inactive{justify-self:end}
  .home-intro{padding:75px 7%}.contact-list p{font-size:12px}
 }
+
+
+/* Admin Leather ID recommendation and duplicate warning */
+.admin-id-hint, .admin-id-warning { display: block; margin-top: 5px; font-size: 10px; line-height: 1.5; letter-spacing: 0; text-transform: none; }
+.admin-id-hint { color: #7b674f; }
+.admin-id-hint strong { color: #805536; font-weight: 700; }
+.admin-id-warning { color: #a13f32; font-weight: 600; }
+.admin-use-suggestion { margin-top: 14px; }
