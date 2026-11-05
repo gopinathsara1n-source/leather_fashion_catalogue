@@ -257,6 +257,6 @@ h2 { font-size: clamp(38px, 5vw, 62px); line-height: 1.12; letter-spacing: -.025
  .site-header{background:#211a16}.desktop-nav{display:none;position:absolute;top:70px;left:0;right:0;padding:22px 7%;flex-direction:column;align-items:flex-start;gap:15px;background:#211a16;border-top:1px solid rgba(255,255,255,.12)}
  .desktop-nav.is-open{display:flex}.desktop-nav button{font-size:12px}.header-link{display:none}.mobile-menu{display:block}
  .page-content{padding-top:110px}.info-page{padding:110px 7% 80px}.info-grid,.capability-grid,.admin-field-grid,.admin-upload-grid{grid-template-columns:1fr}
- .admin-login{padding:25px 20px}.admin-form{padding:19px 14px}.admin-heading{align-items:flex-start;flex-direction:column}.admin-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}.admin-row button{grid-row:2}.admin-row .status-active,.admin-row .status-inactive{justify-self:end}
+ .admin-login{padding:25px 20px}.admin-form{padding:19px 14px}.admin-heading{align-items:flex-start;flex-direction:column}.admin-row{grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px}.admin-row button{grid-row:2}.admin-row .status-active,.admin-row .status-inactive{justify-self:end}
  .home-intro{padding:75px 7%}.contact-list p{font-size:12px}
 }
