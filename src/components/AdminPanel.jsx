@@ -256,7 +256,7 @@ export default function AdminPanel({ onProductsChanged }) {
 
   const deleteProduct = async product => {
     const confirmed = window.confirm(
-      `CAUTION: You are about to permanently delete this catalogue article.\\n\\nArticle: ${product.article_name}\\nLeather ID: ${product.leather_id}\\n\\nIts catalogue record and stored leather images will be removed. This action cannot be undone.\\n\\nDo you want to permanently delete this article?`
+      `CAUTION: You are about to permanently delete this catalogue article.\n\nArticle: ${product.article_name}\nLeather ID: ${product.leather_id}\n\nIts catalogue record and stored leather images will be removed. This action cannot be undone.\n\nDo you want to permanently delete this article?`
     );
     if (!confirmed) return;
     setDeletingId(product.leather_id);
