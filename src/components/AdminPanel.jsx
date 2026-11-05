@@ -39,7 +39,8 @@ function nextLeatherId(products) {
 }
 
 function isStoragePath(value) {
-  return Boolean(value && !/^https?:\\/\\//i.test(value));
+  const url = String(value || '').toLowerCase();
+  return Boolean(value && !url.startsWith('http://') && !url.startsWith('https://'));
 }
 
 function matchesSearch(product, query) {
