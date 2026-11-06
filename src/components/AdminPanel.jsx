@@ -115,7 +115,7 @@ export default function AdminPanel({ onProductsChanged }) {
 
   const loadAdminProducts = async () => {
     const { data, error } = await supabase.from('leather_products')
-      .select('*').order('article_name', { ascending: true });
+      .select('*').order('leather_id', { ascending: true });
     if (error) {
       setProductsLoaded(false);
       setNotice(error.message, 'error');
