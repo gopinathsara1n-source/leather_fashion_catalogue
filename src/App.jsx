@@ -30,8 +30,8 @@ export default function App(){
  const [products,setProducts]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[tab,setTab]=useState('home'),[selected,setSelected]=useState(null),[mobile,setMobile]=useState(false);
  const loadProducts=async()=>{
   if(!isSupabaseConfigured){setError('Catalogue connection is not configured. Add the Supabase environment variables.');setLoading(false);return;}
-  let result=await supabase.from('leather_products').select('leather_id,article_name,color,thickness,tannage,animal,origin,main_photo,closeup_photo,collection_name,finish,grain,application,description,remarks,is_active').eq('is_active',true).order('article_name',{ascending:true});
-  if(result.error&&/column .* does not exist|schema cache/i.test(result.error.message||'')) result=await supabase.from('leather_products').select('leather_id,article_name,color,thickness,tannage,animal,origin,main_photo,closeup_photo,is_active').eq('is_active',true).order('article_name',{ascending:true});
+  let result=await supabase.from('leather_products').select('leather_id,article_name,color,thickness,tannage,animal,origin,main_photo,closeup_photo,collection_name,finish,grain,application,description,remarks,is_active').eq('is_active',true).order('leather_id',{ascending:true});
+  if(result.error&&/column .* does not exist|schema cache/i.test(result.error.message||'')) result=await supabase.from('leather_products').select('leather_id,article_name,color,thickness,tannage,animal,origin,main_photo,closeup_photo,is_active').eq('is_active',true).order('leather_id',{ascending:true});
   if(result.error)setError(result.error.message);else{setProducts(result.data||[]);setError('');}setLoading(false);
  };
  useEffect(()=>{loadProducts();},[]);
